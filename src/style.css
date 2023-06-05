@@ -1,0 +1,21 @@
+.clickable:hover {
+	background-color: var(--inverse-on-surface);
+	cursor: pointer;
+}
+
+img.online:after {
+	content: '----';
+	position: absolute;
+	top: -3px;
+	right: -3px;
+	width: 1.2rem;
+	height: 1.2rem;
+	background-color: #16a34a;
+	border-radius: 100%;
+	border: 3px solid #fff;
+}
+
+.no-clickable:hover,
+.no-clickable:focus {
+	background-color: var(--secondary) !important;
+}

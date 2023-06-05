@@ -1,0 +1,21 @@
+{
+  "name": "vue-widget-loader",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "beercss": "^3.2.4",
+    "swrv": "^1.0.3",
+    "vue": "^3.2.47",
+    "vue-query": "^1.26.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.1.0",
+    "vite": "^4.3.2"
+  }
+}

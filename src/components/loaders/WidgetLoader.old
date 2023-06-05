@@ -1,0 +1,54 @@
+<template>
+	 <div class="widget" :style="{ 'aspect-ratio': loading ? aspectRatio : '' }">
+		<component :is="widgetComponent" :data="data"></component>
+	</div>
+</template>
+
+<script setup>
+	/**
+	 * Este patrón permite la carga de widgets de forma asíncrona.
+	 *
+	 * Es muy interesante dividar las páginas en diferentes widgets que
+	 * cuya carga no bloquee la carga de dicha página
+	 */
+
+	import { ref, defineAsyncComponent, onBeforeUnmount } from 'vue';
+
+	const Loader = defineAsyncComponent(() => import('src/components/Loader.vue'))
+	const Error = defineAsyncComponent(() => import('src/components/Error.vue'))
+
+	const props = defineProps({
+		aspectRatio: {
+			type: String,
+			default: '5 / 3', // define a default value
+		},
+		url: String,
+		importFunction: Function,
+	})
+
+	const controller = new AbortController();
+	const data = ref(null)
+	const loading = ref(true)
+
+	onBeforeUnmount(()=> controller.abort())
+
+	const widgetComponent = defineAsyncComponent({
+		loader: loadComponent,
+		loadingComponent: Loader,
+		errorComponent: Error,
+		delay: 200,
+		timeout: 5000,
+	})
+
+	function loadComponent() {
+		return (
+			fetch(props.url,{ signal: controller.signal })
+				.then(response => response.json())
+				.then(response => (data.value = response))
+				//.then(() => import('../components/KPI.vue')) // Import the component
+				.then(props.importFunction)
+				.catch(e => console.error(e))
+				.finally(() => (loading.value = false))
+		)
+	}
+</script>
