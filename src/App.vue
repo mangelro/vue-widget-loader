@@ -71,15 +71,60 @@
 	</div>
 
 	<div class="grid">
-		<the-list></the-list>
+		<div class="s12">
+			<!-- <the-list></the-list> -->
+			<the-list-slot :items="items" @itemClick="onItemClick" @selecction="onSelecction">
+				<template #default="{ item }">
+					<i class="grey-text">schedule</i>
+					<div class="max">
+						<h6>{{ item.title }}</h6>
+						<div>{{ item.description }}</div>
+					</div>
+				</template>
+			</the-list-slot>
+		</div>
 	</div>
 </template>
 
 <script setup>
-	import { ref, defineAsyncComponent } from 'vue'
+	import { ref, reactive, defineAsyncComponent } from 'vue'
+
+	const items = reactive([
+		{
+			id: 1,
+			title: 'Hola',
+			description: ',mundo',
+			selected: false,
+		},
+		{
+			id: 2,
+			title: 'Hola',
+			description: ',mundo',
+			selected: false,
+		},
+		{
+			id: 3,
+			title: 'Hola',
+			description: ',mundo',
+			selected: false,
+		},
+		{
+			id: 4,
+			title: 'Hola',
+			description: ',mundo',
+			selected: false,
+		},
+		{
+			id: 5,
+			title: 'Hola',
+			description: ',mundo',
+			selected: false,
+		},
+	])
 
 	const WidgetLoader = defineAsyncComponent(() => import('@components/loaders/WidgetLoader.vue'))
-	const TheList = defineAsyncComponent(() => import('@components/TheList.vue'))
+	// const TheList = defineAsyncComponent(() => import('@components/TheList.vue'))
+	const TheListSlot = defineAsyncComponent(() => import('@components/TheListSlot.vue'))
 
 	const employeesRef = ref()
 
@@ -97,7 +142,14 @@
 	async function refreshDialog() {
 		employeesRef.value.refreshData()
 	}
+
+	function onItemClick(item) {}
+
+	function onSelecction(items) {
+		console.log('--> ', items)
+	
+	}
 </script>
 
-<style></style>
+<style scoped></style>
 
