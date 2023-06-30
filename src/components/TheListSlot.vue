@@ -1,32 +1,42 @@
 <template>
-	<div class="max" v-if="selecction.length > 0">
-		<i @click="unSelectAll">close</i>&nbsp;{{ selecction.length }} seleccionado
+	<div class="max" v-if="selectedItems.length > 0">
+		<i @click="unSelectAll">close</i>&nbsp;{{ selectedItems.length }} seleccionado
 		<i @click="selectAll">done</i>
+		<i @click="deleteAll">delete</i>
 	</div>
 
 	<div
-		v-for="item in items"
-		:key="item.id"
-		class="row wave"
+		v-for="item in visibleItems"
+		:key="item.data.id"
+		class="row"
 		:class="item.selected ? 'selected' : null"
-		@click.ctrl="onRowClick(item)"
-		title="Ctrl+click "
+		@click.ctrl="e => onRowSelected(e, item)"
+		@click="onRowClicked(item)"
+		title="Ctrl+click"
 	>
-		<slot name="default" :item="item"></slot>
+		<slot name="default" :item="item.data"></slot>
 
 		<a>
 			<i>edit</i>
 		</a>
 		<a>
-			<i>delete</i>
+			<button class="secondary small small-elevate" @click="e => onRowDeleted(e, item)">
+				<i>delete</i>
+				<span>eliminar</span>
+			</button>
 		</a>
 	</div>
 	<div class="small-divider tiny-margin"></div>
+	<div id="undoneToast" class="toast">
+		Eliminados {{ deletedItems.length }}
+		<div class="max"></div>
+		<button @click="unDelete">deshacer</button>
+	</div>
 </template>
 
 <script setup>
 	//name:'ListItem',
-	import { ref, defineAsyncComponent, computed, watch, toRaw } from 'vue'
+	import { ref, computed, watch, toRaw, onMounted, onBeforeUnmount } from 'vue'
 
 	//const TheComponent = defineAsyncComponent(() => import('src/components/TheComponent.vue'))
 
@@ -37,24 +47,83 @@
 		},
 	})
 
-	const selecction = computed(() => props.items.filter(i => i.selected))
+	const emit = defineEmits(['rowClicked', 'rowSelected', 'rowsDeleted'])
 
-	//const emit = defineEmits(['edit', 'delete'])
-	const emit = defineEmits(['itemClick', 'selecction'])
+	//Creamos una copia
+	// const innerItems = ref(props.items.map(i => ({ ...i })))
+	// innerItems.value.forEach(i => (i['deleted'] = false))
+	// innerItems.value.forEach(i => (i['selected'] = false))
 
-	watch(selecction, newValue => emit('selecction', toRaw(newValue)))
+	const innerItems = ref(props.items.map(i => ({ deleted: false, selected: false, data: i })))
 
-	function onRowClick(item) {
-		item.selected = !item.selected
-		emit('itemClick', item)
+	const deletedItems = computed(() => innerItems.value.filter(i => i.deleted))
+	const visibleItems = computed(() => innerItems.value.filter(i => !i.deleted))
+	const selectedItems = computed(() => innerItems.value.filter(i => i.selected))
+
+	//watch(selectedItems, newValue => emit('rowSelected', toRaw(newValue)))
+
+	// let interval
+	// onMounted(() => {
+	// 	//interval = setInterval(() => ClearDeleted(), 4000)
+	// })
+
+	// onBeforeUnmount(() => {
+	// 	clearInterval(interval)
+	// })
+
+	watch(deletedItems, newDeleted => {
+		setTimeout(() => {
+			ClearDeleted()
+		}, 3000)
+	})
+
+	function ClearDeleted() {
+		const deleted = innerItems.value.filter(i => i.deleted)
+
+		innerItems.value = innerItems.value.filter(i => !i.deleted)
+
+		if (deleted.length > 0)
+			emit(
+				'rowsDeleted',
+				deleted.map(d => d.data)
+			)
+	}
+
+	function onRowSelected(e, row) {
+		e.stopImmediatePropagation()
+		row.selected = !row.selected
+		emit('rowSelected', row.data, row.selected)
+	}
+
+	function onRowDeleted(e, row) {
+		e.stopImmediatePropagation()
+		row.deleted = true
+		ui('#undoneToast', 2500)
+	}
+
+	function onRowClicked(row) {
+		emit('rowClicked', row.data)
+	}
+
+	function unDelete() {
+		deletedItems.value.forEach(i => (i.deleted = false))
 	}
 
 	function unSelectAll() {
-		props.items.forEach(i => (i.selected = false))
+		innerItems.value.forEach(i => (i.selected = false))
 	}
 
 	function selectAll() {
-		props.items.forEach(i => (i.selected = true))
+		innerItems.value.forEach(i => (i.selected = true))
+	}
+
+	function deleteAll() {
+		innerItems.value.forEach(i => {
+			if (i.selected) {
+				i.deleted = true
+			}
+		})
+		ui('#undoneToast', 2500)
 	}
 </script>
 

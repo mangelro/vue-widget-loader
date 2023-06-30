@@ -73,7 +73,12 @@
 	<div class="grid">
 		<div class="s12">
 			<!-- <the-list></the-list> -->
-			<the-list-slot :items="items" @itemClick="onItemClick" @selecction="onSelecction">
+			<the-list-slot
+				:items="items"
+				@row-clicked="onRowClicked"
+				@row-selected="onRowSelected"
+				@rows-deleted="onRowsDeleted"
+			>
 				<template #default="{ item }">
 					<i class="grey-text">schedule</i>
 					<div class="max">
@@ -93,32 +98,27 @@
 		{
 			id: 1,
 			title: 'Hola',
-			description: ',mundo',
-			selected: false,
+			description: ',mundo1',
 		},
 		{
 			id: 2,
 			title: 'Hola',
-			description: ',mundo',
-			selected: false,
+			description: ',mundo2',
 		},
 		{
 			id: 3,
 			title: 'Hola',
-			description: ',mundo',
-			selected: false,
+			description: ',mundo3',
 		},
 		{
 			id: 4,
 			title: 'Hola',
-			description: ',mundo',
-			selected: false,
+			description: ',mundo4',
 		},
 		{
 			id: 5,
 			title: 'Hola',
-			description: ',mundo',
-			selected: false,
+			description: ',mundo5',
 		},
 	])
 
@@ -143,13 +143,18 @@
 		employeesRef.value.refreshData()
 	}
 
-	function onItemClick(item) {}
+	function onRowClicked(row) {
+		console.log('onRowClicked --> ', row)
+	}
 
-	function onSelecction(items) {
-		console.log('--> ', items)
-	
+	function onRowSelected(row, selected) {
+		row.title += ' SELECT ' + selected
+		console.log('onRowSelected --> ', row)
+	}
+
+	function onRowsDeleted(rows) {
+		console.log('onRowDeleted --> ', rows)
 	}
 </script>
 
 <style scoped></style>
-
