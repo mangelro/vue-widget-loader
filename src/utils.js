@@ -44,7 +44,7 @@ const memoize = function (fn) {
 
 /**
  * Memoiza el resultado de una función durante un periodo de tiempo,
- * independientemente del número de llamadas que se realice a la función retorna 
+ * independientemente del número de llamadas que se realice a la función retorna
  * el resultado memoizado
  *
  * @param {Function} fn Función para la generación de resultados
@@ -64,10 +64,4 @@ const memoizeInterval = function (fn, interval) {
 	}
 }
 
-export default {
-	wait,
-	delay,
-	timer,
-	memoize,
-	memoizeInterval,
-}
+export { wait, delay, timer, memoize, memoizeInterval }
