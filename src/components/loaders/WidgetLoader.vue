@@ -10,7 +10,7 @@
 	//name:'WidgetLoader',
 
 	import { onMounted, defineAsyncComponent, watch } from 'vue'
-	import { useQuery } from 'vue-query'
+	//import { useQuery } from 'vue-query'
 	import { useFetcher } from '@composables/Fetcher.js'
 	import { useResolver } from '@composables/Resolver.js'
 
@@ -46,9 +46,10 @@
 		//body: JSON.stringify(body),
 		headers: {
 			'Content-Type': 'application/json',
+			//'Access-Control-Allow-Origin':'*', //CORS
 		},
-		//credentials: 'same-origin',
-		//cache: 'default',
+		// credentials: 'same-origin',
+		// cache: 'default',
 		//mode: 'no-cors',
 	},
 	o => (o.headers['Authorization'] = `Basic ${getAutorization('miguel', 'angel')}`),

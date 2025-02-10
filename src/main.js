@@ -1,13 +1,20 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-import { VueQueryPlugin } from "vue-query";
 
+
+//eCharts
+import { registerTheme } from 'echarts/core';
+import themeMinimal from '/src/css/themes/minimalist.json'
+import themeDash from '/src/css/themes/dashboard.json'
+
+
+registerTheme('minimalist', themeMinimal);
+registerTheme('dashboard', themeDash);
 
 
 import 'beercss'
 
 createApp(App)
-.use(VueQueryPlugin)
 .mount('#app')
 

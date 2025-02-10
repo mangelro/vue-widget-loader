@@ -25,16 +25,38 @@ const _onAuthorizedFail = o => console.log('401 - AuthenticateFail')
  * @returns
  */
 export function useFetcher(...args) {
+
+	
 	const { url = args, ...options } = args[0]
+
 	const onAuthorizedError = args[1] ?? _onAuthorizedFail
 
 	const _controller = new AbortController()
 
 	options['signal'] = _controller.signal
 
-	const fetchData = () => {
-		return fetch(url, options).then(_proccessJsonResponse).catch(_processError)
+	const fetchData = () =>{
+
+		return new Promise((resolve,reject) => {
+			setTimeout(() => {
+					fetch(url, options)
+					.then(_proccessJsonResponse)
+					.then(resolve)
+					.catch(reject)		
+			}, getRandomInt(3000, 10000))
+		})
+
+		//return fetch(url, options).then(_proccessJsonResponse).catch(_processError)
+	} 
+	
+	const getRandomInt=(min, max) =>{
+		min = Math.ceil(min);
+		max = Math.floor(max);
+		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
+
+
+
 
 	const _proccessJsonResponse = response => {
 		if (response.ok) {

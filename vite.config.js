@@ -7,6 +7,7 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
 	resolve: {
 		alias: {
+			'@public': path.resolve(__dirname, '../public'),
 			'@': path.resolve(__dirname, './src'),
 			'@components': path.resolve(__dirname, './src/components'),
 			'@composables': path.resolve(__dirname, './src/composables'),

@@ -22,23 +22,23 @@
 		</header>
 
 		<!--https://dummy.restapiexample.com/api/v1/employees-->
-		<widget-loader
-			:url="'https://api.meteomatics.com/2023-05-25T00:00:00ZP1D:PT1H/t_2m:C,relative_humidity_2m:p/47.4245,9.3767/html?model=mix&request_type=GET'"
+		<!-- <widget-loader
+			:url="'http://dummy.restapiexample.com/api/v1/employees'"
 			:import-function="importEmployees"
 			ref="employeesRef"
 			fetch-on-mounted
-		>
-		</widget-loader>
+		> 
+		</widget-loader>  -->
 	</dialog>
 
-	<div class="grid">
+	<!-- <div class="grid small-space">
 		<div class="s12">
 			<div class="small-space border round">
 				<div class="progress left"></div>
 			</div>
 		</div>
 
-		<!-- <div class="s12 m6">
+		<div class="s12 m6 l3">
 			<widget-loader
 				:url="'https://dummyjson.com/products/1'"
 				:import-function="importProduct"
@@ -46,7 +46,7 @@
 			></widget-loader>
 		</div>
 
-		<div class="s12 m6">
+		<div class="s12 m6 l3">
 			<widget-loader
 				:url="'https://dummyjson.com/products/2'"
 				:import-function="importProduct"
@@ -54,25 +54,24 @@
 			></widget-loader>
 		</div>
 
-		<div class="s12 m6">
+		<div class="s12 m6 l3">
 			<widget-loader
 				:url="'https://dummyjson.com/products/xx'"
 				:import-function="importProduct"
 				fetch-on-mounted
 			></widget-loader>
 		</div>
-		<div class="s12 m6">
+		<div class="s12 m6 l3">
 			<widget-loader
 				:url="'https://dummyjson.com/products/4'"
 				:import-function="importProduct"
 				fetch-on-mounted
 			></widget-loader>
-		</div> -->
-	</div>
+		</div>
+	</div> -->
 
-	<div class="grid">
+	<!-- <div class="grid">
 		<div class="s12">
-			<!-- <the-list></the-list> -->
 			<the-list-slot
 				:items="items"
 				@row-clicked="onRowClicked"
@@ -88,11 +87,70 @@
 				</template>
 			</the-list-slot>
 		</div>
+	</div> -->
+
+	<div class="grid">
+		<article class="border s12 m12 l6">
+			<ChartWidgetLoader
+				component="EuriborChart.vue"
+				:data-source="datos2023"
+				title="EURIBOR 23"
+				theme="minimalist"
+			></ChartWidgetLoader>
+		</article>
+
+		<article class="border s12 m12 l6">
+			<ChartWidgetLoader
+				component="EuriborChart.vue"
+				:data-source="datos2024"
+				title="EURIBOR 24"
+				theme="dashboard"
+			></ChartWidgetLoader>
+		</article>
 	</div>
 </template>
 
 <script setup>
-	import { ref, reactive, defineAsyncComponent } from 'vue'
+	import { ref, reactive, watchEffect, defineAsyncComponent } from 'vue'
+
+	const ChartWidgetLoader = defineAsyncComponent(() => import('@components/loaders/ChartWidgetLoader.vue'))
+
+	const euribor = ref(null)
+
+	import('../public/euribor.json')
+		.then(module => {
+			const datos = module.default
+			const newEuribor = []
+
+			for (let i = 0; i < datos.length; i++) {
+				const date = new Date(datos[i].fecha)
+
+				newEuribor.push({
+					date: date,
+					value: datos[i].euribor,
+				})
+			}
+
+			euribor.value = newEuribor
+		})
+		.catch(error => {
+			console.error(error)
+			euribor.value = []
+		})
+
+	// const datos2024= () => new Promise(resolve => resolve([
+	// 	{ value: 335, name: 'Direct' },
+	// 	{ value: 310, name: 'Email' },
+	// 	{ value: 234, name: 'Ad Networks' },
+	// 	{ value: 135, name: 'Video Ads' },
+	// 	{ value: 1548, name: 'Search Engines' },
+	// ]))
+
+	const datos2024 = () =>
+		new Promise(resolve => resolve(euribor.value.filter(item => item.date.getFullYear() == 2024)))
+
+	const datos2023 = () =>
+		new Promise(resolve => resolve(euribor.value.filter(item => item.date.getFullYear() == 2023)))
 
 	const items = reactive([
 		{
@@ -122,14 +180,14 @@
 		},
 	])
 
-	const WidgetLoader = defineAsyncComponent(() => import('@components/loaders/WidgetLoader.vue'))
+	//const WidgetLoader = defineAsyncComponent(() => import('@components/loaders/WidgetLoader.vue'))
 	// const TheList = defineAsyncComponent(() => import('@components/TheList.vue'))
-	const TheListSlot = defineAsyncComponent(() => import('@components/TheListSlot.vue'))
+	//const TheListSlot = defineAsyncComponent(() => import('@components/TheListSlot.vue'))
 
-	const employeesRef = ref()
+	//const employeesRef = ref()
 
-	const importProduct = () => import('@components/WidgetProduct.vue')
-	const importEmployees = () => import('@components/WidgetEmployees.vue')
+	//const importProduct = () => import('@components/WidgetProduct.vue')
+	//const importEmployees = () => import('@components/WidgetEmployees.vue')
 
 	function showDialog(selector) {
 		ui(selector)

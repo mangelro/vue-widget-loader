@@ -1,20 +1,22 @@
 <template>
 	<article class="border small">
-		<div class="img-hover-zoom">
-			<img class="responsive img-hover-zoom" :src="data.thumbnail" :alt="data.title" style="max-height: 250px" />
+		<div class="img-hover-zoom center-align">
+			<img class="responsive" :src="data.thumbnail" :alt="data.title"  />
 		</div>
 		<h5>{{ data.title }}</h5>
 
 		<a class="chip small no-clickable">
 			<span>{{ data.category }}</span>
 		</a>
+	
 		<a class="chip small">
 			<span>{{ data.brand }}</span>
 		</a>
+	
 		<p>{{ data.description }}</p>
 		<p>{{ data.price }}€</p>
 		<nav class="right-align">
-			<button>Buy</button>
+			<button @click="buyIt($event)">Buy</button>
 		</nav>
 	</article>
 </template>
@@ -30,6 +32,10 @@
 			requited: true,
 		},
 	})
+
+	const buyIt = (e) => {
+		console.log('buyIt', e.target)	
+	}
 </script>
 
 <style scoped>
