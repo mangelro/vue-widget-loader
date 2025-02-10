@@ -1,8 +1,19 @@
 <template>
 	<div class="max" v-if="selectedItems.length > 0">
-		<i @click="unSelectAll">close</i>&nbsp;{{ selectedItems.length }} seleccionado
-		<i @click="selectAll">done</i>
-		<i @click="deleteAll">delete</i>
+		<button class="small-round small primary" @click="unSelectAll">
+			<i>close</i>
+			<span>{{ selectedItems.length }} seleccionados</span>
+		</button>
+
+		<button class="small-round small primary" @click="selectAll">
+			<i>done</i>
+			<span>Select all</span>
+		</button>
+
+		<button class="small-round small primary" @click="deleteAll">
+			<i>delete</i>
+			<span>Delete all</span>
+		</button>
 	</div>
 
 	<div
@@ -12,9 +23,9 @@
 		:class="item.selected ? 'selected' : null"
 		@click.ctrl="e => onRowSelected(e, item)"
 		@click="onRowClicked(item)"
-		title="Ctrl+click"
+		title="ctrl+click"
 	>
-		<slot name="default" :item="item.data"></slot>
+		<slot :item="item.data"></slot>
 
 		<a>
 			<i>edit</i>
@@ -26,19 +37,26 @@
 			</button>
 		</a>
 	</div>
+
+	
 	<div class="small-divider tiny-margin"></div>
-	<div id="undoneToast" class="toast">
-		Eliminados {{ deletedItems.length }}
+
+	<!--
+		Toast para deshacer
+	-->
+	<app-toast v-model="showToast">
+		<span>Eliminados {{ deletedItems.length }}</span>
 		<div class="max"></div>
-		<button @click="unDelete">deshacer</button>
-	</div>
+		<button class="small-round small primary no-margin" @click="unRowDeleted">Deshacer</button>
+	</app-toast>
 </template>
 
 <script setup>
 	//name:'ListItem',
-	import { ref, computed, watch, toRaw, onMounted, onBeforeUnmount } from 'vue'
+	import { ref, computed, defineAsyncComponent } from 'vue'
+	import { useCanceler } from '@composables/Canceler.js'
 
-	//const TheComponent = defineAsyncComponent(() => import('src/components/TheComponent.vue'))
+	const AppToast = defineAsyncComponent(() => import('@components/AppToast.vue'))
 
 	const props = defineProps({
 		items: {
@@ -49,10 +67,7 @@
 
 	const emit = defineEmits(['rowClicked', 'rowSelected', 'rowsDeleted'])
 
-	//Creamos una copia
-	// const innerItems = ref(props.items.map(i => ({ ...i })))
-	// innerItems.value.forEach(i => (i['deleted'] = false))
-	// innerItems.value.forEach(i => (i['selected'] = false))
+	const { doCommand, cancelCommand } = useCanceler(ClearDeleted)
 
 	const innerItems = ref(props.items.map(i => ({ deleted: false, selected: false, data: i })))
 
@@ -60,24 +75,11 @@
 	const visibleItems = computed(() => innerItems.value.filter(i => !i.deleted))
 	const selectedItems = computed(() => innerItems.value.filter(i => i.selected))
 
-	//watch(selectedItems, newValue => emit('rowSelected', toRaw(newValue)))
-
-	// let interval
-	// onMounted(() => {
-	// 	//interval = setInterval(() => ClearDeleted(), 4000)
-	// })
-
-	// onBeforeUnmount(() => {
-	// 	clearInterval(interval)
-	// })
-
-	watch(deletedItems, newDeleted => {
-		setTimeout(() => {
-			ClearDeleted()
-		}, 3000)
-	})
+	const showToast = ref(false)
 
 	function ClearDeleted() {
+		console.log('ClearDeleted')
+
 		const deleted = innerItems.value.filter(i => i.deleted)
 
 		innerItems.value = innerItems.value.filter(i => !i.deleted)
@@ -98,16 +100,22 @@
 	function onRowDeleted(e, row) {
 		e.stopImmediatePropagation()
 		row.deleted = true
-		ui('#undoneToast', 2500)
+		//showToast()
+		showToast.value = true
+		doCommand()
+	}
+
+	function unRowDeleted() {
+		deletedItems.value.forEach(i => (i.deleted = false))
+		showToast.value = false
+		cancelCommand()
 	}
 
 	function onRowClicked(row) {
 		emit('rowClicked', row.data)
 	}
 
-	function unDelete() {
-		deletedItems.value.forEach(i => (i.deleted = false))
-	}
+	function onRowEdited(row) {}
 
 	function unSelectAll() {
 		innerItems.value.forEach(i => (i.selected = false))
@@ -123,7 +131,12 @@
 				i.deleted = true
 			}
 		})
-		ui('#undoneToast', 2500)
+
+		showToast.value = true
+		toastTimer.value = setTimeout(() => {
+			showToast.value = false
+		}, 3_000)
+		doCommand()
 	}
 </script>
 

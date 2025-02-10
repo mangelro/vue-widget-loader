@@ -38,7 +38,11 @@
 			</div>
 		</div>
 
+<<<<<<< HEAD
 		<div class="s12 m6 l3">
+=======
+		<div class="s12 m6">
+>>>>>>> 71e21f4c1e325d12655b7edbde0b4d890fcf18fd
 			<widget-loader
 				:url="'https://dummyjson.com/products/1'"
 				:import-function="importProduct"
@@ -68,7 +72,11 @@
 				fetch-on-mounted
 			></widget-loader>
 		</div>
+<<<<<<< HEAD
 	</div> -->
+=======
+	</div>
+>>>>>>> 71e21f4c1e325d12655b7edbde0b4d890fcf18fd
 
 	<!-- <div class="grid">
 		<div class="s12">
@@ -77,14 +85,13 @@
 				@row-clicked="onRowClicked"
 				@row-selected="onRowSelected"
 				@rows-deleted="onRowsDeleted"
+				v-slot="{ item }"
 			>
-				<template #default="{ item }">
-					<i class="grey-text">schedule</i>
-					<div class="max">
-						<h6>{{ item.title }}</h6>
-						<div>{{ item.description }}</div>
-					</div>
-				</template>
+				<i class="grey-text">schedule</i>
+				<div class="max">
+					<h6>{{ item.title }}</h6>
+					<div>{{ item.description }}</div>
+				</div>
 			</the-list-slot>
 		</div>
 	</div> -->
@@ -180,7 +187,12 @@
 		},
 	])
 
+<<<<<<< HEAD
 	//const WidgetLoader = defineAsyncComponent(() => import('@components/loaders/WidgetLoader.vue'))
+=======
+	const WidgetLoader = defineAsyncComponent(() => import('@components/loaders/WidgetLoader.vue'))
+
+>>>>>>> 71e21f4c1e325d12655b7edbde0b4d890fcf18fd
 	// const TheList = defineAsyncComponent(() => import('@components/TheList.vue'))
 	//const TheListSlot = defineAsyncComponent(() => import('@components/TheListSlot.vue'))
 
