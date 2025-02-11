@@ -16,7 +16,7 @@
     "vue-echarts": "^7.0.3"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.6.2",
+    "@vitejs/plugin-vue": "^5.2.1",
     "vite": "^6.1.0"
   }
 }

@@ -13,12 +13,14 @@
 	 * cuya carga no bloquee la carga de dicha página
 	 */
 
-	import { ref, defineAsyncComponent } from 'vue'
+	import { ref, defineAsyncComponent, watch } from 'vue'
 
 	const Loader = defineAsyncComponent(() => import('@components/TheLoader.vue'))
 	const Error = defineAsyncComponent(() => import('@components/TheError.vue'))
 
 	const data = ref([])
+
+
 
 	const loading = ref(true)
 

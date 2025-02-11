@@ -1,9 +1,9 @@
 {
 	"grid": {
-		"top": 20,
-		"bottom": 30,
-		"left": 20,
-		"right": 20,
+		"top": 50,
+		"bottom": 0,
+		"left": 0,
+		"right": 0,
 		"containerLabel": true
 	},
 	"color": [
@@ -33,6 +33,7 @@
 		}
 	},
 	"line": {
+		"silent":true,
 		"itemStyle": {
 			
 		},
@@ -43,22 +44,11 @@
 		},
 		"symbol": "none",
 		"showSymbol": false,
-		"smooth": true,
-		"emphasis": {
-			"focus": "series",
-			"scale": 3,
-			"itemStyle": {
-				"borderWidth": 3,
-				"borderColor": "#4318FF"
-			},
-			"lineStyle": {
-				"width": 4,
-				"shadowBlur": 25,
-				"shadowColor": "#4318FF",
-				"shadowOffsetX": 0,
-				"shadowOffsetY": 20
-			}
-		}
+		"smooth": true,		
+		"areaStyle":{
+			"opacity":0.1
+		},
+		"connectNulls": true
 	},
 	"radar": {
 		"itemStyle": {
@@ -234,6 +224,7 @@
 		}
 	},
 	"categoryAxis": {
+		"show":false,
 		"axisLine": {
 			"show": false
 		},
@@ -252,6 +243,7 @@
 		"boundaryGap": 0
 	},
 	"valueAxis": {
+		"show":false,
 		"axisLine": {
 			"show": false
 		},
@@ -338,6 +330,8 @@
 		}
 	},
 	"tooltip": {
+
+		"show":false,
 		"axisPointer": {
 			"lineStyle": {
 				"color": "#ccc",

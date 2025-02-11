@@ -4,8 +4,8 @@
 </template>
 
 <script setup>
-	//name:'EuriborChart',
-	import { ref, provide, defineAsyncComponent, computed } from 'vue'
+	//name:'EuriborChartDouble',
+	import { ref, provide, defineAsyncComponent, computed, watch, watchEffect } from 'vue'
 	import { use } from 'echarts/core'
 	import { CanvasRenderer } from 'echarts/renderers'
 	import { LineChart } from 'echarts/charts'
@@ -21,28 +21,42 @@
 		},
 		title: {
 			type: String,
-			default: '',
+		},
+		seriesName: {
+			type: Array,
+			required: true,
 		},
 		theme: {
 			type: String,
 			default: 'light',
 		},
-		seriesColor: String,
-		seriesName: String
+	})
+
+	watchEffect(() => {
+		console.log(props.data)
 	})
 
 	provide(THEME_KEY, props.theme)
 
 	const option = ref({
 		title: {
+			show: false,
 			text: props.title,
 		},
 		tooltip: {
 			trigger: 'axis',
 			formatter: function (params) {
-				const date = new Date(params[0].name).toLocaleDateString('es-ES', { year: '2-digit', month: 'short' })
-				const value = params[0].value
-				return `${date} : ${value}`
+				const date = new Date(params[0].name).toLocaleDateString('es-ES', { month: 'short' }).toUpperCase()
+
+				const salida = [`${date} <br/>`]
+				for (let { color, seriesName, value } of params) {
+					if (value !== undefined)
+						salida.push(
+							`<span style="font-size:1.5rem;color:${color}">&#9679;</span>&nbsp;&nbsp;${seriesName}&nbsp;&nbsp;&nbsp;${value}<br/>`
+						)
+				}
+
+				return salida.join('')
 			},
 		},
 		xAxis: {
@@ -58,13 +72,19 @@
 		},
 		series: [
 			{
-				lineStyle:{
-					color: props.seriesColor ?? null,
-				},
-			
-				name: props.seriesName ?? props.title,
+				name: props.seriesName[0] ?? null,
 				type: 'line',
-				data: props.data.map(item => item.value),
+				data: props.data.map(item => Object.values(item)[1] ?? null),
+			},
+			{
+				name: props.seriesName[1] ?? null,
+				type: 'line',
+				data: props.data.map(item => Object.values(item)[2] ?? null),
+			},
+			{
+				name: props.seriesName[2] ?? null,
+				type: 'line',
+				data: props.data.map(item => Object.values(item)[3] ?? null),
 			},
 		],
 	})

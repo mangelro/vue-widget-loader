@@ -38,11 +38,7 @@
 			</div>
 		</div>
 
-<<<<<<< HEAD
 		<div class="s12 m6 l3">
-=======
-		<div class="s12 m6">
->>>>>>> 71e21f4c1e325d12655b7edbde0b4d890fcf18fd
 			<widget-loader
 				:url="'https://dummyjson.com/products/1'"
 				:import-function="importProduct"
@@ -72,11 +68,7 @@
 				fetch-on-mounted
 			></widget-loader>
 		</div>
-<<<<<<< HEAD
 	</div> -->
-=======
-	</div>
->>>>>>> 71e21f4c1e325d12655b7edbde0b4d890fcf18fd
 
 	<!-- <div class="grid">
 		<div class="s12">
@@ -97,21 +89,66 @@
 	</div> -->
 
 	<div class="grid">
-		<article class="border s12 m12 l6">
+		<article class="s12 m12 l4 no-padding">
 			<ChartWidgetLoader
 				component="EuriborChart.vue"
 				:data-source="datos2023"
 				title="EURIBOR 23"
-				theme="minimalist"
+				theme="dashboard"
+				class="small-opacity"
 			></ChartWidgetLoader>
-		</article>
 
-		<article class="border s12 m12 l6">
+			<div class="absolute top left right small-padding top-margin">
+				<div class="row orange-text">
+					<i>euro</i>
+					<h5 class="small">EURIBOR ANUAL</h5>
+				</div>
+				<div class="row">
+					<h2 class="small" v-if="ultimoEurb !== null">{{ Number(ultimoEurb).toLocaleString('es-ES') }}</h2>
+					<h6
+						class="small"
+						v-if="diferencialEurb !== null"
+						:class="diferencialEurb > 0 ? 'green-text' : 'red-text'"
+					>
+						<i class="small">{{ diferencialEurb > 0 ? 'trending_up' : 'trending_down' }}</i
+						>{{ diferencialEurb }}
+					</h6>
+					
+				</div>
+			</div>
+		</article>
+	</div>
+
+	<div class="grid">
+		<article class="s12 m12 l4 orange1">
+			<div class="row orange-text">
+				<i>euro</i>
+				<h5>EURIBOR ANUAL</h5>
+			</div>
+
+			<h2 v-if="ultimoEurb !== null">{{ Number(ultimoEurb).toLocaleString('es-ES') }}</h2>
+			<div class="row">
+				<h6 v-if="diferencialEurb !== null" :class="diferencialEurb > 0 ? 'green-text' : 'red-text'">
+					<i class="small right-margin">{{ diferencialEurb > 0 ? 'trending_up' : 'trending_down' }}</i
+					>{{ diferencialEurb }}
+				</h6>
+				<p class="grey-text medium-text">Este mes</p>
+			</div>
 			<ChartWidgetLoader
 				component="EuriborChart.vue"
 				:data-source="datos2024"
 				title="EURIBOR 24"
-				theme="dashboard"
+				theme="minimalist"
+			></ChartWidgetLoader>
+		</article>
+
+		<article class="border s12 m12 l4">
+			<ChartWidgetLoader
+				component="EuriborChartDouble.vue"
+				:data-source="datos2023Y2024"
+				title="EURIBOR ANUAL"
+				:series-name="['EURIBOR 23', 'EURIBOR 24']"
+				theme="minimalist"
 			></ChartWidgetLoader>
 		</article>
 	</div>
@@ -119,45 +156,69 @@
 
 <script setup>
 	import { ref, reactive, watchEffect, defineAsyncComponent } from 'vue'
+	import { useFetcher } from '@composables/Fetcher.js'
+	import { computed } from 'vue'
 
 	const ChartWidgetLoader = defineAsyncComponent(() => import('@components/loaders/ChartWidgetLoader.vue'))
 
-	const euribor = ref(null)
+	const { fetcher } = useFetcher({
+		url: 'https://localhost:7133/v1/euribor?periodo=202401|202412',
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	})
 
-	import('../public/euribor.json')
-		.then(module => {
-			const datos = module.default
-			const newEuribor = []
+	const { fetcher: fetcher2 } = useFetcher({
+		url: 'https://localhost:7133/v1/euribor?periodo=202301|202312',
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	})
 
-			for (let i = 0; i < datos.length; i++) {
-				const date = new Date(datos[i].fecha)
+	const datos2023 = () =>
+		fetcher2().then(data =>
+			data.result.map(d => ({ date: parseDateString(d.fecha), value: d.valor.toFixed(2) })).reverse()
+		)
 
-				newEuribor.push({
-					date: date,
-					value: datos[i].euribor,
+	const datos2024 = () =>
+		fetcher().then(data =>
+			data.result.map(d => ({ date: parseDateString(d.fecha), value: d.valor.toFixed(2) })).reverse()
+		)
+
+	const ultimoEurb = ref(null)
+	const previoEurb = ref(null)
+
+	const diferencialEurb = computed(() => (ultimoEurb.value - previoEurb.value).toFixed(2))
+
+	const datos2023Y2024 = () => {
+		return Promise.all([fetcher2(), fetcher()]).then(([data2023, data2024]) => {
+			const datos23 = data2023.result
+				.map(d => ({ date: parseDateString(d.fecha), value: d.valor.toFixed(2) }))
+				.reverse()
+			const datos24 = data2024.result
+				.map(d => ({ date: parseDateString(d.fecha), value: d.valor.toFixed(2) }))
+				.reverse()
+
+			const max = Math.max(datos23.length, datos24.length)
+
+			const newData = []
+
+			let i = 0
+			for (i = 0; i < max; i++) {
+				newData.push({
+					date: datos23[i].date,
+					value1: datos23[i].value,
+					value2: datos24[i].value,
 				})
 			}
 
-			euribor.value = newEuribor
+			ultimoEurb.value = datos24[i - 1].value
+			previoEurb.value = datos24[i - 2].value
+			return newData
 		})
-		.catch(error => {
-			console.error(error)
-			euribor.value = []
-		})
-
-	// const datos2024= () => new Promise(resolve => resolve([
-	// 	{ value: 335, name: 'Direct' },
-	// 	{ value: 310, name: 'Email' },
-	// 	{ value: 234, name: 'Ad Networks' },
-	// 	{ value: 135, name: 'Video Ads' },
-	// 	{ value: 1548, name: 'Search Engines' },
-	// ]))
-
-	const datos2024 = () =>
-		new Promise(resolve => resolve(euribor.value.filter(item => item.date.getFullYear() == 2024)))
-
-	const datos2023 = () =>
-		new Promise(resolve => resolve(euribor.value.filter(item => item.date.getFullYear() == 2023)))
+	}
 
 	const items = reactive([
 		{
@@ -187,12 +248,7 @@
 		},
 	])
 
-<<<<<<< HEAD
 	//const WidgetLoader = defineAsyncComponent(() => import('@components/loaders/WidgetLoader.vue'))
-=======
-	const WidgetLoader = defineAsyncComponent(() => import('@components/loaders/WidgetLoader.vue'))
-
->>>>>>> 71e21f4c1e325d12655b7edbde0b4d890fcf18fd
 	// const TheList = defineAsyncComponent(() => import('@components/TheList.vue'))
 	//const TheListSlot = defineAsyncComponent(() => import('@components/TheListSlot.vue'))
 
@@ -225,6 +281,10 @@
 	function onRowsDeleted(rows) {
 		console.log('onRowDeleted --> ', rows)
 	}
-</script>
 
-<style scoped></style>
+	function parseDateString(dateString) {
+		const year = parseInt(dateString.substring(0, 4), 10)
+		const month = parseInt(dateString.substring(4, 6), 10) - 1 // Los meses en JavaScript son 0-indexados
+		return new Date(year, month)
+	}
+</script>

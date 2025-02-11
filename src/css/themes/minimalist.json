@@ -1,14 +1,17 @@
 {
 	"grid": {
+		"show": false,
 		"width": "100%",
 		"right": 5,
 		"left": 5,
-		"bottom": 40
+		"bottom": 40,
+		"backgroundColor": "#FF0000"
 	},
-	"color": ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4", "#ea7ccc"],
+	"color": ["#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4", "#ea7ccc", "#5470c6"],
 	"backgroundColor": "rgba(255, 255, 255, 0)",
 	"textStyle": {},
 	"title": {
+		"show": false,
 		"left": "center",
 		"textStyle": {
 			"color": "#333",
@@ -23,26 +26,33 @@
 			"borderWidth": 0
 		},
 		"lineStyle": {
-			"width": 2,
+			"width": 4,
 			"cap": "round",
 			"shadowColor": "rgba(0, 0, 0, 0.2)",
 			"shadowBlur": 3,
 			"shadowOffsetX": 2,
 			"shadowOffsetY": 3
 		},
+		"showSymbol": false,
 		"symbolSize": 5,
 		"symbol": "emptyCircle",
 		"smooth": true,
 		"emphasis": {
+			"focus": "series",
+			"scale": 2,
 			"itemStyle": {
+				"borderWidth": 2
+				
+			},
+			"lineStyle": {
+				"width": 4,
 				"shadowBlur": 10,
-				"shadowOffsetX": 0,
-				"shadowColor": "rgba(0, 0, 0, 0.5)"
+				"shadowColor": "rgba(0, 0, 0, 0.5)",
+				"shadowOffsetX": 5,
+				"shadowOffsetY": 10
 			}
 		},
-		"areaStyle": {
-			"color": "rgba(135, 206, 250, 0.2)"
-		}
+		"connectNulls": true
 	},
 	"radar": {
 		"itemStyle": {

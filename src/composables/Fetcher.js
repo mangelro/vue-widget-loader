@@ -37,16 +37,16 @@ export function useFetcher(...args) {
 
 	const fetchData = () =>{
 
-		return new Promise((resolve,reject) => {
-			setTimeout(() => {
-					fetch(url, options)
-					.then(_proccessJsonResponse)
-					.then(resolve)
-					.catch(reject)		
-			}, getRandomInt(3000, 10000))
-		})
+		// return new Promise((resolve,reject) => {
+		// 	setTimeout(() => {
+		// 			fetch(url, options)
+		// 			.then(_proccessJsonResponse)
+		// 			.then(resolve)
+		// 			.catch(reject)		
+		// 	}, getRandomInt(3000, 10000))
+		// })
 
-		//return fetch(url, options).then(_proccessJsonResponse).catch(_processError)
+		return fetch(url, options).then(_proccessJsonResponse).catch(_processError)
 	} 
 	
 	const getRandomInt=(min, max) =>{
