@@ -1,3 +1,10 @@
+/******
+ *
+ *
+ *
+ * V 1.1
+ */
+
 'use strict'
 
 import { ref, onBeforeUnmount, readonly } from 'vue'
@@ -15,41 +22,53 @@ const noopSuccess = () => {
 }
 
 const noopError = e => {
+	//throw e
 	console.error('tryResolve Error ', e)
 }
 
 /**
  * Intenta resolver una promesa generada por una función
- * @param {Object} options
- * 	- successNotification: función para notificar de la ejecución correcta
- *  - errorNotification: función para notificar de la ejecución incorrecta.
- * 		Recibe como parámetros el error producido
- * 		Si retorna true se lazará la excepción motivo del error que debaerá ser capturada
- *  - retryDelay: Número de milisegundos entre reintentos. def: 300
+ * @param {Object} param0
+ *  - notifications:
+ * 		- successNotification: función para notificar de la ejecución correcta
+ *  	- errorNotification: función para notificar de la ejecución incorrecta.
+ * 			Recibe como parámetros el error producido y una indicación de si el usuario canceló
+ * 			la ejecución antes de su final.
+ * 			Si retorna true se lazará la excepción motivo del error que debaerá ser capturada
+ *  - delayRetry: Número de milisegundos entre reintentos. def: 300
+ *  - cancelSource: Método, si existe del origen de datos para cancelar la peitición
+ * 			Existe un problema con el contexto de this en el origen de datos y toma this como el
+ * 			objeto options para solucionalo hay que forzar el contexto con bind: service.cancelRequest.bind(service),
+ *
+ * 	USO:
+ * 		const { tryResolve, cancelResolve, data, isLoading, error } = useResolver({
+ *			cancelSource: service.cancelRequest.bind(service),
+ *			delayRetry: 1500,
+ *			notifications: {
+ *				errorNotification: e => {
+ *					ui('#errorToast', 2000)
+ *				},
+ *			},
+ *		})
+ *
  */
 export function useResolver(options = {}) {
 	const controller = new AbortController()
-
 	const signal = controller.signal
 
-	const { retryDelay = 300 } = options //tiempo de espera entre reintentos
+	const { delayRetry = 500 } = options //tiempo de espera entre reintentos
 
-	/**
+	/*
 	 * Se puede establecer de manera global las notificaciones
 	 */
 
-	//	Desectructuración con valores por defecto. Si no existe se establecen tambien valores por defecto
-
 	//Desectructuración con valores por defecto. Si no existe se establecen tambien valores por defecto
-	//si se desea utilizar dentro de un objeto
-	// const {
-	// 	notifications: { successNotification = noopSuccess, errorNotification = noopError } = {
-	// 		successNotification: noopSuccess,
-	// 		errorNotification: noopError,
-	// 	},
-	// } = options
-
-	const { successNotification = noopSuccess, errorNotification = noopError } = options
+	const {
+		notifications: { successNotification = noopSuccess, errorNotification = noopError } = {
+			successNotification: noopSuccess,
+			errorNotification: noopError,
+		},
+	} = options
 
 	const _notifications = {
 		successNotification,
@@ -57,7 +76,7 @@ export function useResolver(options = {}) {
 		clearSuccessNotification: () => (_notifications.successNotification = noopSuccess),
 		clearErrorNotification: () => (_notifications.errorNotification = noopError),
 	}
-	//
+
 	const isLoading = ref(false)
 	const data = ref(null)
 	const error = ref(null)
@@ -68,9 +87,7 @@ export function useResolver(options = {}) {
 	 * @param {Number} retries Número máximo de intentos para resolver la promesa
 	 * @returns true si la Promesa se resolvió correctamente, false en cualquier otro caso.
 	 */
-
-	const tryResolve = (queryFn, retries) => {
-
+	const tryResolve = (queryFn, retries = 0) => {
 		if (typeof queryFn !== 'function') throw new Error('First argument must by a factory function')
 
 		isLoading.value = true
@@ -86,10 +103,12 @@ export function useResolver(options = {}) {
 			.catch(e => {
 				if (retries > 0 && !signal.aborted) {
 					console.warn('Reintentado...', retries)
-					return delay(() => tryResolve(queryFn, retries - 1), retryDelay)
+					return delay(() => tryResolve(queryFn, retries - 1), delayRetry)
 				}
-				error.value = e
+
+				error.value = e.message
 				data.value = null
+
 				//Si la función de notificación retorna true se lanza la excepción
 				// que debería ser capturada en el await de la llamada al tryResolve
 				if (_notifications.errorNotification(e)) throw e
@@ -104,7 +123,10 @@ export function useResolver(options = {}) {
 	 * Emite la señal para intentar cancelar la ejecución la promesa
 	 * @returns
 	 */
-	const cancelResolve = () => controller.abort()
+	const cancelResolve = () => {
+		controller.abort()
+		if (options.cancelSource) options.cancelSource()
+	}
 
 	onBeforeUnmount(() => {
 		cancelResolve()
@@ -114,12 +136,13 @@ export function useResolver(options = {}) {
 		isLoading: readonly(isLoading),
 		data: readonly(data),
 		error: readonly(error),
+		//cancellationPending: readonly(cancellationPending),
 
 		//methods
 		tryResolve,
 		cancelResolve,
 
-		//Se pueden establecen de manera local las notificaciones
+		//Se pueden establecer de manera local las notificaciones
 		notifications: _notifications,
 	}
 }
