@@ -1,6 +1,21 @@
 import axios from 'axios'
+import {endpoints} from './EndpointServices'
 
-const iso8601Regex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|([+-]\d{2}:\d{2}))$/i
+
+
+//const iso8601Regex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|([+-]\d{2}:\d{2}))$/i
+
+
+/**
+  Esta expresión regular cubre las siguientes variantes del formato ISO 8601:
+	- Fecha básica: `YYYY-MM-DD`
+	- Fecha y hora básica: `YYYY-MM-DDThh:mm:ss`
+	- Fecha y hora con milisegundos: `YYYY-MM-DDThh:mm:ss.sss`
+	- Fecha y hora con zona horaria UTC: `YYYY-MM-DDThh:mm:ss.sssZ`
+	- Fecha y hora con zona horaria offset: `YYYY-MM-DDThh:mm:ss+hh:mm`
+ */
+
+const iso8601Regex=/^(\d{4})-(\d{2})-(\d{2})([T\s](\d{2}):(\d{2}):(\d{2})(\.\d{3})?(Z|([+-](\d{2}):?(\d{2})))?)?$/i
 
 class ErrorService extends Error {
 	constructor(message, resource) {
@@ -15,15 +30,17 @@ export class BaseService {
 	 */
 	constructor() {
 		this.controller = null
+		this.interceptor = null
 
-		const AUTH_TOKEN = 'Bearer'
-
-		axios.defaults.baseURL = 'https://dummyjson.com'
-		axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
+		this.AUTH_TOKEN =
+			'eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwidHlwIjoiSldUIiwiY3R5IjoiSldUIn0.qbsstZh_ccVtPXE57Mj-PbmZihaVexOUT4eWco3BFDtYPqP2IeEmLQ.Mg8SpYFHD5paMYALFuRiEA.aGgErV-NSBL_pPwOsc8zp3tObvGvJuvdhLMFEqPK57wY_NvVHV9QyxnLxoA8i4NTlftp-Qfy8X_NvG5436LEQcYk9biEWJvHyewTvEsWOSXjH5Pk1RU6jVUOx0-NialhID0OHyQVj9a4lo2GwboKlgSmV1cI1_5nMX_Q4yRh3gtPcYJMvuklnw_TxMmqOHFm36It4WfR2D8jLj5zlZnCtnj5jBSLqb1j5ZCG11f5nJFjnZGqbrQgJJpy0LHmXR57orpvY7keSqbgK-2DPpA9iC2qL_IoPD1K95SHV6hLmBP3CTqIUoAsJl4ATPYDnBysZ1GnMceTxM4sRXPEpqcanTCmpO9DAkWa9CCRsNEjYytgbLo_55Bqa8FYfNRqXuXvdzIIbi0vNUJcY2I6lCZT7SVoqRNxNoGwV2OI1uY-RqXjOT3fbPVTzfzSdUjczI_q1zOlM1mQvfe9-1Jjkl9kgGNhtVVsUX6CScONkUQVQY_QyPGAca75IdTe6Kxs0Gq6N1dWSb6bxb6VOb-k4XzogaYQEFxkvhvs2pm1C0OMpecURCXMz29vhXnURrikM26sCNw2r9WtdG7ewKZsMQCW7o0pwJOT7sfVRcyyfkWdA3eaVPMDJioSFaNUXJOdLG4aM4HvxRp3jIC9hefs2SlMwHukI2fCwjH6N0mdKcs3VEmGcpaG_-znhMlyXZDjeAPF4vTBKKsi8DHoIq0ibTBM71rwQRDGX5slEnR24ZXON85mzLPoSNJV7QM3Hk_ruMY4.OoRwJMJZJt00LkIUWay_aw'
+		this.REFRESH_TOKEN = '994a3e0c313d4461a5ca6bd081a1cb26'
+		axios.defaults.baseURL = endpoints.URL_BASE_API()
+		axios.defaults.headers.common['Authorization'] = `Bearer ${this.AUTH_TOKEN}`
 		axios.defaults.headers.post['Content-Type'] = 'application/json'
 
 		this.instance = axios.create({
-			timeout: 1000,
+			timeout: 10_000,
 			headers: {
 				Accept: 'application/json',
 				'Accept-Language': 'es',
@@ -122,40 +139,31 @@ export class BaseService {
 	/**
 	 * Verificar si la respueta denegada en por expiración del token y pasar el de referesco!!!
 	 */
-	_useRefreshToken() {
-		this.client.interceptors.response.use(
+	useRefreshToken() {
+		if (this.interceptor !== null) return
+
+		this.interceptor = this.instance.interceptors.response.use(
 			response => response,
 			async error => {
-				const { config, response } = error
+				const originalRequest = error.config
 
-				// if (config.url !== endpoints.URL_SIGNIN && response) {
-				// 	if (authUserStore === null) authUserStore = useAuthUserStore()
+				if (error.response.status === 401 && !originalRequest._retry) {
+					originalRequest._retry = true
+					// Lógica para refrescar el token
+					return axios
+						.post(endpoints.URL_REFRESH, {
+							refreshToken: this.REFRESH_TOKEN,
+							appKey: '91b51999-57cf-4d10-ae10-d632dcce29db',
+						})
+						.then(res => {
+							this.AUTH_TOKEN = res.data.accessToken
+							this.REFRESH_TOKEN= res.data.refreshToken
 
-				// 	//se trata de un error 401 -
-				// 	if (response.status === 401 && !config._retry) {
-				// 		config._retry = true
-				// 		try {
-				// 			const internalClient = axios.create()
-
-				// 			const rs = await internalClient.post(endpoints.URL_REFRESH, {
-				// 				accessToken: authUserStore.accessToken,
-				// 				refreshToken: authUserStore.refreshToken,
-				// 			})
-
-				// 			const { accessToken, refreshToken } = rs.data
-
-				// 			authUserStore.setAccessToken(accessToken, refreshToken)
-
-				// 			config.headers.Authorization = `Bearer ${authUserStore.accessToken}`
-
-				// 			return this.client(config)
-				// 			//return config
-				// 		} catch (_error) {
-				// 			console.error('error interno', _error)
-				// 			return Promise.reject(_error)
-				// 		}
-				//	}
-				//}
+							// Guarda el nuevo token y reintenta la petición original
+							originalRequest.headers['Authorization'] = `Bearer ${this.AUTH_TOKEN}` 
+							return axios(originalRequest)
+						})
+				}
 
 				return Promise.reject(error)
 			}
@@ -170,13 +178,13 @@ export class BaseService {
 	_onError(e) {
 		if (e.response) {
 			if (e.response.data) {
-				throw new ErrorService(e.response.data.message, e.request.responseURL)
+				throw new ErrorService(e.response.data.detail, e.request.responseURL)
 			} else {
-				throw new ErrorService(e.response, e.request.responseURL)
+				throw new ErrorService(e.message, e.request.responseURL)
 			}
 		}
 
-		throw new ErrorService(e.message, e.request.responseURL)
+		throw new ErrorService(e.message)
 	}
 
 	/**

@@ -1,10 +1,11 @@
 <template>
-	<!-- :theme="theme" -->
-	<VChart class="chart" :option="option" autoresize />
+
+	<VChart class="chart" :option="option" :theme autoresize />
 </template>
 
 <script setup>
 	//name:'EuriborChart',
+	import {commomProperties} from './properties'
 	import { ref, provide, defineAsyncComponent, computed } from 'vue'
 	import { use } from 'echarts/core'
 	import { CanvasRenderer } from 'echarts/renderers'
@@ -15,23 +16,10 @@
 	use([CanvasRenderer, GridComponent, LineChart, TitleComponent, TooltipComponent, LegendComponent])
 
 	const props = defineProps({
-		data: {
-			type: Array,
-			default: [],
-		},
-		title: {
-			type: String,
-			default: '',
-		},
-		theme: {
-			type: String,
-			default: 'light',
-		},
-		seriesColor: String,
-		seriesName: String
+		...commomProperties
 	})
 
-	provide(THEME_KEY, props.theme)
+	//provide(THEME_KEY, props.theme)
 
 	const option = ref({
 		title: {
@@ -40,18 +28,17 @@
 		tooltip: {
 			trigger: 'axis',
 			formatter: function (params) {
-				const date = new Date(params[0].name).toLocaleDateString('es-ES', { year: '2-digit', month: 'short' })
-				const value = params[0].value
-				return `${date} : ${value}`
+				const {name, color, seriesName, value } =params[0]
+				return `<p>${name}</p><span style="font-size:1.5rem;color:${props.seriesColor??color}">&#9679;</span>&nbsp;&nbsp;${seriesName}&nbsp;&nbsp;&nbsp;<b>${value}</b>`
 			},
 		},
 		xAxis: {
 			type: 'category',
 			data: props.data.map(item => item.date),
-			axisLabel: {
-				formatter: value => new Date(value).toLocaleDateString('es-ES', { month: 'short' }).toUpperCase(),
-				interval: 1,
-			},
+			// axisLabel: {
+			// 	formatter: value => new Date(value).toLocaleDateString('es-ES', { month: 'short' }).toUpperCase(),
+			// 	interval: 1,
+			// },
 		},
 		yAxis: {
 			type: 'value',
@@ -59,12 +46,15 @@
 		series: [
 			{
 				lineStyle:{
-					color: props.seriesColor ?? null,
+					color: props.seriesColor,
 				},
-			
+				
 				name: props.seriesName ?? props.title,
 				type: 'line',
 				data: props.data.map(item => item.value),
+				areaStyle:{
+					color: props.seriesColor,
+				}
 			},
 		],
 	})

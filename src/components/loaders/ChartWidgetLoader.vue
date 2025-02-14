@@ -27,7 +27,7 @@
 	const props = defineProps({
 		aspectRatio: {
 			type: String,
-			default: '16/9', // define a default value
+			default: '16/9', // Los más habituales: 16/9 - 18/9 - 19/9 - 20/9 - 21/9
 		},
 		component: String, // Nombre del componente a cargar
 		dataSource: {
@@ -41,15 +41,16 @@
 		loadingComponent: Loader,
 		errorComponent: Error,
 		delay: 200,
-		timeout: 5000,
+		timeout: 10_000,
 	})
 
 	function loadComponent() {
+		
 		return props
 			.dataSource()
 			.then(values => (data.value = values))
-			.then(() => import(`../${props.component}`)) // Import the component
-			.catch(e => console.error(e))
+			.then(() => import(/* @vite-ignore */`../charts/${props.component}`)) 
+			
 			.finally(() => (loading.value = false))
 	}
 </script>

@@ -5,7 +5,7 @@
 		"right": 5,
 		"left": 5,
 		"bottom": 40,
-		"backgroundColor": "#FF0000"
+		"borderWidth": 0
 	},
 	"color": ["#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4", "#ea7ccc", "#5470c6"],
 	"backgroundColor": "rgba(255, 255, 255, 0)",
@@ -26,7 +26,7 @@
 			"borderWidth": 0
 		},
 		"lineStyle": {
-			"width": 4,
+			"width": 2,
 			"cap": "round",
 			"shadowColor": "rgba(0, 0, 0, 0.2)",
 			"shadowBlur": 3,
@@ -39,20 +39,22 @@
 		"smooth": true,
 		"emphasis": {
 			"focus": "series",
-			"scale": 2,
+			"scale": 0,
 			"itemStyle": {
 				"borderWidth": 2
-				
 			},
 			"lineStyle": {
-				"width": 4,
-				"shadowBlur": 10,
+				"width": 3,
+				"shadowBlur": 5,
 				"shadowColor": "rgba(0, 0, 0, 0.5)",
-				"shadowOffsetX": 5,
-				"shadowOffsetY": 10
+				"shadowOffsetX": 4,
+				"shadowOffsetY": 2
 			}
 		},
-		"connectNulls": true
+		"connectNulls": true,
+		"areaStyle": {
+			"opacity": 0.2
+		}
 	},
 	"radar": {
 		"itemStyle": {
@@ -67,14 +69,20 @@
 	},
 	"bar": {
 		"itemStyle": {
-			"barBorderWidth": 0,
-			"barBorderColor": "#ccc"
+			"barBorderWidth": 10,
+			"barBorderColor": "#ccc",
+			"borderRadius":4
+
 		},
 		"emphasis": {
 			"itemStyle": {
 				"barBorderWidth": 0,
 				"barBorderColor": "#ccc"
 			}
+		},
+		"backgroundStyle": {
+			"opacity": 0.1,
+			"borderRadius": 4
 		}
 	},
 	"pie": {
@@ -229,7 +237,7 @@
 	},
 	"categoryAxis": {
 		"axisLine": {
-			"show": true,
+			"show": false,
 			"lineStyle": {
 				"color": "#ccc"
 			}
@@ -257,23 +265,25 @@
 			}
 		}
 	},
+
 	"valueAxis": {
 		"axisLine": {
-			"show": false,
-			"lineStyle": {
-				"color": ""
-			}
-		},
-		"axisTick": {
 			"show": false,
 			"lineStyle": {
 				"color": "#333"
 			}
 		},
+		"axisTick": {
+			"show": false,
+			"lineStyle": {
+				"color": "#aaa"
+			}
+		},
 		"axisLabel": {
 			"show": false,
-			"color": "#333"
+			"color": "#aaa"
 		},
+
 		"splitLine": {
 			"show": true,
 			"lineStyle": {
@@ -284,6 +294,12 @@
 			"show": false,
 			"areaStyle": {
 				"color": ["rgba(250,250,250,0.3)", "rgba(200,200,200,0.3)"]
+			}
+		},
+		"minorSplitLine": {
+			"show": false,
+			"lineStyle": {
+				"color": ["#E7E6E7"]
 			}
 		}
 	},
@@ -363,6 +379,8 @@
 		}
 	},
 	"tooltip": {
+		"show": true,
+		"trigger": "axis",
 		"axisPointer": {
 			"lineStyle": {
 				"color": "#ccc",

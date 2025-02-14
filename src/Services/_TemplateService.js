@@ -1,11 +1,16 @@
 import { BaseService } from './BaseService'
+import {endpoints} from './EndpointServices'
 
-class ProductService extends BaseService {
+
+class NombreService extends BaseService {
+
+	constructor(){
+		super()
+	}
 
 	/**
 	 *
 	 * @param {*} id
-	 * @param {*} cancellation
 	 * @returns
 	 */
 	async getProduct(id) {
@@ -15,4 +20,4 @@ class ProductService extends BaseService {
 }
 
 //singleton
-export const service = new ProductService()
+export const service = new NombreService()

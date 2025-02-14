@@ -2,6 +2,8 @@ import { createApp } from 'vue'
 import './css/style.css'
 import App from './App.vue'
 
+// Importa el router
+import router from './router/index'
 
 //eCharts
 import { registerTheme } from 'echarts/core';
@@ -16,5 +18,6 @@ registerTheme('dashboard', themeDash);
 import 'beercss'
 
 createApp(App)
+.use(router)
 .mount('#app')
 
