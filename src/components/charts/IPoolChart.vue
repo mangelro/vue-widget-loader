@@ -1,10 +1,10 @@
 <template>
-
 	<VChart class="chart" :option="option" :theme autoresize />
 </template>
 
 <script setup>
-	import {commomProperties} from './properties.js'
+	import { commonProperties } from './properties.js'
+	import { commonToolbox } from './toolbox.js'
 	import { ref, provide, defineAsyncComponent, computed } from 'vue'
 	import { use } from 'echarts/core'
 	import { CanvasRenderer } from 'echarts/renderers'
@@ -13,11 +13,10 @@
 		GridComponent,
 		TitleComponent,
 		TooltipComponent,
-		LegendComponent,
 		ToolboxComponent,
-		DataZoomComponent,
+		DataZoomComponent
 	} from 'echarts/components'
-	import VChart, { THEME_KEY } from 'vue-echarts'
+	import VChart from 'vue-echarts'
 
 	use([
 		CanvasRenderer,
@@ -26,50 +25,56 @@
 		TitleComponent,
 		TooltipComponent,
 		ToolboxComponent,
-		DataZoomComponent,
-		LegendComponent,
+		DataZoomComponent
 	])
 
 	const props = defineProps({
-		...commomProperties
+		...commonProperties,
 	})
 
 	//provide(THEME_KEY, props.theme)
 
 	const option = ref({
 		grid: {
-			//top: '5%',
-			bottom: 100,
+			top: '5%',
+			bottom: 70,
 			right: 10,
-			left: 10,
+			left: '15%',
 		},
 		title: {
 			text: props.title,
 		},
-		toolbox: {
-			feature: {
-				dataZoom: {
-					yAxisIndex: 'none',
-				},
-				restore: {},
-				saveAsImage: {},
-			},
-		},
+		toolbox: commonToolbox,
 		tooltip: {
-			// position: function (pt) {
-			// 	return [pt[0], '10%']
-			// },
+			formatter: function (params) {
+				const salida = [
+					`<table cellSpacing="0" cellPadding="0" border="0" class="tooltip-echarts"><caption>${params[0].name}</caption>`,
+				]
+				for (let { color, marker, seriesName, value } of params) {
+					if (value !== undefined)
+						salida.push(
+							`<tr><td><span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span></td><td>${seriesName}</td><td>${value}&nbsp;€/t</td></tr>`
+						)
+				}
+				salida.push('</table>')
+				return salida.join('')
+			},
 		},
 		xAxis: {
 			type: 'category',
-			data: props.data.map(item => item.date),
-			boundaryGap: false
+			data: props.data.map(item => item.date.toLocaleDateString('es-ES')),
+			boundaryGap: false,
 		},
 		yAxis: {
+			name: '€/t',
 			type: 'value',
 			boundaryGap: [0, 0],
 			scale: true,
 			splitNumber: 4,
+			axisLabel: {
+				show: true,
+				formatter: v => parseFloat(v).toLocaleString('es-ES', { style: 'decimal', minimumFractionDigits: 0 }),
+			},
 		},
 		dataZoom: [
 			{
@@ -84,7 +89,6 @@
 		],
 		series: [
 			{
-				sampling: 'lttb',
 				lineStyle: {
 					color: props.seriesColor,
 				},
@@ -92,10 +96,32 @@
 				type: 'line',
 				data: props.data.map(item => item.value),
 				areaStyle: {
+					color: {
+						type: 'linear',
+						x: 0,
+						y: 0,
+						x2: 0,
+						y2: 1,
+						colorStops: [
+							{
+								offset: 0,
+								color: props.seriesColor,
+							},
+							{
+								offset: 1,
+								color: '#FFF',
+							},
+						],
+						global: false, // default is false
+					},
+				},
+
+				itemStyle: {
 					color: props.seriesColor,
 				},
 			},
 		],
+
 	})
 
 	// Función para calcular el índice de inicio para los últimos 30 registros
@@ -107,4 +133,3 @@
 	}
 </script>
 
-<style scoped></style>

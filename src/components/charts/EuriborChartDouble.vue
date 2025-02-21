@@ -10,7 +10,7 @@
 	import { CanvasRenderer } from 'echarts/renderers'
 	import { LineChart } from 'echarts/charts'
 	import { GridComponent, TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-	import VChart, { THEME_KEY } from 'vue-echarts'
+	import VChart from 'vue-echarts'
 
 	use([CanvasRenderer, GridComponent, LineChart, TitleComponent, TooltipComponent, LegendComponent])
 
@@ -36,7 +36,6 @@
 		console.log(props.data)
 	})
 
-	provide(THEME_KEY, props.theme)
 
 	const option = ref({
 		title: {

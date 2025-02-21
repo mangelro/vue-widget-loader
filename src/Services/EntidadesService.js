@@ -1,7 +1,7 @@
 import { BaseService } from './BaseService'
 import { endpoints } from './EndpointServices'
 
-class NombreService extends BaseService {
+class EntidadesService extends BaseService {
 	constructor() {
 		super()
 	}
@@ -11,7 +11,7 @@ class NombreService extends BaseService {
 	 * @param {*} id
 	 * @returns
 	 */
-	async getProduct(query) {
+	async get(query) {
 		const r = await super.get(endpoints.URL_ENTIDADES, {
 			params: {
 				...query,
@@ -22,4 +22,4 @@ class NombreService extends BaseService {
 }
 
 //singleton
-export const service = new NombreService()
+export const service = new EntidadesService()

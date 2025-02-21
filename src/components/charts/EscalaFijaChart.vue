@@ -8,38 +8,44 @@
 	import { computed } from 'vue'
 	import { use } from 'echarts/core'
 	import { CanvasRenderer } from 'echarts/renderers'
-	import { LineChart, BarChart } from 'echarts/charts'
+	import { LineChart } from 'echarts/charts'
 	import {
 		GridComponent,
 		TitleComponent,
 		TooltipComponent,
 		LegendComponent,
 		ToolboxComponent,
+		DataZoomComponent
 	} from 'echarts/components'
 	import VChart from 'vue-echarts'
+
 
 	use([
 		CanvasRenderer,
 		GridComponent,
 		LineChart,
-		BarChart,
 		TitleComponent,
 		TooltipComponent,
 		ToolboxComponent,
 		LegendComponent,
+		DataZoomComponent
 	])
 
 	const props = defineProps({
 		...commonProperties,
+		max: Number,
+		min: Number,
 	})
 
 	const endColor = '#F7F2F7'
 	const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
-	const option = computed(() => ({
+
+	const option = computed(()=>({
 		grid: {
 			top: '10%',
 			right: 80,
+			bottom:80,
 			left: 80,
 		},
 		title: {
@@ -68,15 +74,28 @@
 				return salida.join('')
 			},
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 0,
+				end: 50,
+			},
+			{
+				start: 0,
+				end: 50,
+			},
+		],
 		xAxis: {
 			type: 'category',
-			data: props.data.map(item => item.date.toLocaleDateString()),
+			data: props.data.map(item =>  `${monthNames[item.date.getMonth()]}'${item.date.getFullYear().toString().substring(2)}` ),
 		},
-		yAxis: [
+		yAxis:
 			{
 				name: '€/t',
 				type: 'value',
 				scale: true,
+				min:props.min,
+				max:props.max,
 				axisLabel: {
 					show: true,
 					color: '#aaa',
@@ -84,22 +103,7 @@
 						parseFloat(v).toLocaleString('es-ES', { style: 'decimal', minimumFractionDigits: 0 }),
 				},
 			},
-			{
-				name: 'toneladas (t)',
-				offset: 0,
-				type: 'value',
-				scale: true,
-				axisLabel: {
-					show: true,
-					color: '#aaa',
-					formatter: v =>
-						parseFloat(v).toLocaleString('es-ES', { style: 'decimal', minimumFractionDigits: 0 }),
-				},
-				axisLine: {
-					show: false,
-				},
-			},
-		],
+
 
 		series: [
 			{
@@ -198,22 +202,7 @@
 					color: props.seriesColor[2],
 				},
 			},
-			{
-				yAxisIndex: 1,
-				type: 'bar',
-				name: props.seriesName[3] ?? props.title,
-				data: props.data.map(i => i.cantidad),
-
-				itemStyle: {
-					color: props.seriesColor[3],
-				},
-
-				showBackground: true,
-
-				backgroundStyle: {
-					color: props.seriesColor[3],
-				},
-			},
 		],
 	}))
+
 </script>

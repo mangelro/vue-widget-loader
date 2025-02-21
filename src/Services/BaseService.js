@@ -1,10 +1,9 @@
 import axios from 'axios'
-import {endpoints} from './EndpointServices'
-
-
+import { endpoints } from './EndpointServices'
+import { useAuthStore } from '@stores/AuthStore'
+//import crypto from 'crypto'
 
 //const iso8601Regex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|([+-]\d{2}:\d{2}))$/i
-
 
 /**
   Esta expresión regular cubre las siguientes variantes del formato ISO 8601:
@@ -15,9 +14,9 @@ import {endpoints} from './EndpointServices'
 	- Fecha y hora con zona horaria offset: `YYYY-MM-DDThh:mm:ss+hh:mm`
  */
 
-const iso8601Regex=/^(\d{4})-(\d{2})-(\d{2})([T\s](\d{2}):(\d{2}):(\d{2})(\.\d{3})?(Z|([+-](\d{2}):?(\d{2})))?)?$/i
+const iso8601Regex = /^(\d{4})-(\d{2})-(\d{2})([T\s](\d{2}):(\d{2}):(\d{2})(\.\d{3})?(Z|([+-](\d{2}):?(\d{2})))?)?$/i
 
-class ErrorService extends Error {
+export class ErrorService extends Error {
 	constructor(message, resource) {
 		super(message)
 		this.resource = resource
@@ -29,14 +28,13 @@ export class BaseService {
 	 * Valores por defecto
 	 */
 	constructor() {
-		this.controller = null
-		this.interceptor = null
+		this._updated = false
+		this._store = useAuthStore()
+		this._controller = null
+		this._interceptor = null
 
-		this.AUTH_TOKEN =
-			'eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwidHlwIjoiSldUIiwiY3R5IjoiSldUIn0.qbsstZh_ccVtPXE57Mj-PbmZihaVexOUT4eWco3BFDtYPqP2IeEmLQ.Mg8SpYFHD5paMYALFuRiEA.aGgErV-NSBL_pPwOsc8zp3tObvGvJuvdhLMFEqPK57wY_NvVHV9QyxnLxoA8i4NTlftp-Qfy8X_NvG5436LEQcYk9biEWJvHyewTvEsWOSXjH5Pk1RU6jVUOx0-NialhID0OHyQVj9a4lo2GwboKlgSmV1cI1_5nMX_Q4yRh3gtPcYJMvuklnw_TxMmqOHFm36It4WfR2D8jLj5zlZnCtnj5jBSLqb1j5ZCG11f5nJFjnZGqbrQgJJpy0LHmXR57orpvY7keSqbgK-2DPpA9iC2qL_IoPD1K95SHV6hLmBP3CTqIUoAsJl4ATPYDnBysZ1GnMceTxM4sRXPEpqcanTCmpO9DAkWa9CCRsNEjYytgbLo_55Bqa8FYfNRqXuXvdzIIbi0vNUJcY2I6lCZT7SVoqRNxNoGwV2OI1uY-RqXjOT3fbPVTzfzSdUjczI_q1zOlM1mQvfe9-1Jjkl9kgGNhtVVsUX6CScONkUQVQY_QyPGAca75IdTe6Kxs0Gq6N1dWSb6bxb6VOb-k4XzogaYQEFxkvhvs2pm1C0OMpecURCXMz29vhXnURrikM26sCNw2r9WtdG7ewKZsMQCW7o0pwJOT7sfVRcyyfkWdA3eaVPMDJioSFaNUXJOdLG4aM4HvxRp3jIC9hefs2SlMwHukI2fCwjH6N0mdKcs3VEmGcpaG_-znhMlyXZDjeAPF4vTBKKsi8DHoIq0ibTBM71rwQRDGX5slEnR24ZXON85mzLPoSNJV7QM3Hk_ruMY4.OoRwJMJZJt00LkIUWay_aw'
-		this.REFRESH_TOKEN = '994a3e0c313d4461a5ca6bd081a1cb26'
 		axios.defaults.baseURL = endpoints.URL_BASE_API()
-		axios.defaults.headers.common['Authorization'] = `Bearer ${this.AUTH_TOKEN}`
+
 		axios.defaults.headers.post['Content-Type'] = 'application/json'
 
 		this.instance = axios.create({
@@ -44,17 +42,72 @@ export class BaseService {
 			headers: {
 				Accept: 'application/json',
 				'Accept-Language': 'es',
+				
 			},
 		})
 
+		this.instance.interceptors.request.use(
+			config => {
+				if (this._store.userAuth?.isAuthenticated ?? false)
+					config.headers['Authorization'] = `Bearer ${this._store.userAuth.accessToken}`
+
+				return config
+			},
+			error => Promise.reject(error)
+		)
+
+		this.instance.interceptors.request.use(
+			async config => {
+				if (config.method === 'get') {
+					const secret =import.meta.env.VITE_SECRET_KEY
+					const params = Object.fromEntries(Object.entries(config.params).filter(([_, v]) => v !== null));
+					const queryString = new URLSearchParams(params).toString();
+
+					const hash = await this._generateHMAC(secret, queryString)
+					//
+					config.headers['X-Hmac'] = hash
+				}
+
+				return config
+			},
+			error => Promise.reject(error)
+		)
+
 		this.instance.defaults.transformResponse.push(this._transformDates)
+	}
+
+	async _generateHMAC(key, data) {
+		// Convertir la clave secreta y los datos a ArrayBuffers
+		const encoder = new TextEncoder()
+		const keyData = encoder.encode(key)
+		//const jsonData = encoder.encode(JSON.stringify(data));
+		const jsonData = encoder.encode(data)
+
+		// Importar la clave para usarla con HMAC
+		const cryptoKey = await crypto.subtle.importKey(
+			'raw',
+			keyData,
+			{ name: 'HMAC', hash: { name: 'SHA-256' } },
+			false,
+			['sign']
+		)
+
+		// Generar el HMAC
+		const signature = await crypto.subtle.sign('HMAC', cryptoKey, jsonData)
+
+		// Convertir la firma (ArrayBuffer) a una cadena hexadecimal
+		const hashArray = Array.from(new Uint8Array(signature))
+
+		
+		 const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+		 return hashHex;
 	}
 
 	/**
 	 * Cancela la petición actual
 	 */
 	cancelRequest() {
-		this.controller?.abort()
+		this._controller?.abort()
 	}
 
 	/**
@@ -65,12 +118,12 @@ export class BaseService {
 	 */
 	async get(url, config) {
 		try {
-			this.controller = new AbortController()
+			this._controller = new AbortController()
 
 			return await this.instance.request({
 				method: 'get',
 				url,
-				signal: this.controller.signal,
+				signal: this._controller.signal,
 				...config,
 			})
 		} catch (e) {
@@ -140,29 +193,40 @@ export class BaseService {
 	 * Verificar si la respueta denegada en por expiración del token y pasar el de referesco!!!
 	 */
 	useRefreshToken() {
-		if (this.interceptor !== null) return
+		if (this._interceptor !== null) return
 
-		this.interceptor = this.instance.interceptors.response.use(
+		this._interceptor = this.instance.interceptors.response.use(
 			response => response,
 			async error => {
 				const originalRequest = error.config
-
 				if (error.response.status === 401 && !originalRequest._retry) {
 					originalRequest._retry = true
-					// Lógica para refrescar el token
-					return axios
-						.post(endpoints.URL_REFRESH, {
-							refreshToken: this.REFRESH_TOKEN,
-							appKey: '91b51999-57cf-4d10-ae10-d632dcce29db',
-						})
-						.then(res => {
-							this.AUTH_TOKEN = res.data.accessToken
-							this.REFRESH_TOKEN= res.data.refreshToken
 
-							// Guarda el nuevo token y reintenta la petición original
-							originalRequest.headers['Authorization'] = `Bearer ${this.AUTH_TOKEN}` 
-							return axios(originalRequest)
-						})
+					if (this._store.userAuth?.isAuthenticated ?? false) {
+						// Lógica para refrescar el token
+						return axios
+							.post(endpoints.URL_REFRESH, {
+								refreshToken: this._store.userAuth.refreshToken,
+								appKey: '91b51999-57cf-4d10-ae10-d632dcce29db',
+							})
+							.then(res => {
+								console.log(
+									'Set new refresh token',
+									`${this._store.userAuth.refreshToken} => ${res.data.refreshToken}`
+								)
+
+								//this._store.userAuth.refreshToken = res.data.refreshToken
+								//this._store.userAuth.accessToken = res.data.accessToken
+
+								this._store.userAuth = res.data
+								this._updated = true
+
+								// Guarda el nuevo token y reintenta la petición original
+								originalRequest.headers['Authorization'] = `Bearer ${this._store.userAuth.accessToken}`
+
+								return axios(originalRequest)
+							})
+					}
 				}
 
 				return Promise.reject(error)
@@ -176,6 +240,8 @@ export class BaseService {
 	*/
 
 	_onError(e) {
+		//if (e.status === 401) throw e
+
 		if (e.response) {
 			if (e.response.data) {
 				throw new ErrorService(e.response.data.detail, e.request.responseURL)
@@ -196,6 +262,8 @@ export class BaseService {
 	_transformDates(obj) {
 		function recursiveDateTransform(obj) {
 			for (const key of Object.keys(obj)) {
+				if (obj[key] === null) continue
+
 				if (typeof obj[key] === 'string' && iso8601Regex.test(obj[key])) {
 					obj[key] = new Date(obj[key])
 				} else if (typeof obj[key] === 'object') {

@@ -19,3 +19,39 @@ img.online:after {
 .no-clickable:focus {
 	background-color: var(--secondary) !important;
 }
+
+
+
+table.tooltip-echarts{
+	border-collapse: collapse; 
+	width: 100%;
+}
+
+table.tooltip-echarts caption{
+	text-align: left;
+	font-weight:bold;
+}
+table.tooltip-echarts td{
+	padding:2px;
+	margin:0;
+}
+table.tooltip-echarts td:last-child {
+  
+    font-weight: bold; /* Cambia el peso de la fuente */
+    text-align: right; /* Alinea el texto a la derecha */
+}
+
+
+.chip.fill.AOVE{
+	background-color: #6cb304!important;
+	color:#FFFFFF!important;
+}
+.chip.fill.AOV{
+	background-color: #e7d21f!important;
+	color:#FFFFFF!important;
+}
+
+.chip.fill.AOL{
+	background-color: #ab4030!important;
+	color:#FFFFFF!important;
+}

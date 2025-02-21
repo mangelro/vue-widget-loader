@@ -13,6 +13,7 @@ export default defineConfig({
 			'@stores': path.resolve(__dirname, './src/stores'),
 			'@assets': path.resolve(__dirname, './src/assets'),
 			'@services': path.resolve(__dirname, './src/services'),
+			crypto: "crypto-browserify",
 		},
 	},
 

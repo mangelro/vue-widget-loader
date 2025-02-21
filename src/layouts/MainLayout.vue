@@ -1,72 +1,35 @@
 <template>
-	<header>
-		<nav>
-			<button class="circle transparent" @click="showDialog('#dialog-employees')">
-				<i>menu</i>
-			</button>
-			<h5 class="max center-align">Servicios</h5>
-			<button class="circle transparent">
-				<img class="responsive" src="/vite.svg" />
-			</button>
+	<header class="primary-container">
+		<nav class="max center-align">
+	
+
+			<img   src="https://m.poolred.com/imagenes/logo_Poolredv0_blanco.png" />
 		</nav>
 	</header>
-	<dialog class="left" id="dialog-employees">
-		<header class="fixed">
-			<nav>
-				<img class="circle" src="/vite.svg" />
-				<div class="max"><h6>Empleados</h6></div>
-				<button class="transparent circle" @click="refreshDialog()"><i>refresh</i></button>
-				<button class="transparent circle" @click="closeDialog('#dialog-employees')"><i>close</i></button>
-			</nav>
-		</header>
-		<ul class="list border no-space">
-			<li>
-				<router-link to="/euribor" activeClass="orange1" exactActiveClass="orange1">
-					<div class="max">
-						<h6 class="small">Euribor</h6>
-						<div class="small-text">Datos históricos de cotización</div>
-					</div>
-				</router-link>
-			</li>
-			<li>
-				<router-link to="/precios" activeClass="orange1" exactActiveClass="orange1">
-					<div class="max">
-						<h6 class="small">Precios</h6>
-						<div class="small-text">Datos de cotización</div>
-					</div>
-				</router-link>
-			</li>
-			<li>
-				<router-link to="/ipool" activeClass="orange1" exactActiveClass="orange1">
-					<div class="max">
-						<h6 class="small">IPool España</h6>
-						<div class="small-text">Datos de cotización</div>
-					</div>
-				</router-link>
-			</li>
-			<li>
-				<router-link to="/densidad" activeClass="orange1" exactActiveClass="orange1">
-					<div class="max">
-						<h6 class="small">Gráf. Densidad</h6>
-						<div class="small-text">Densidad de precios</div>
-					</div>
-				</router-link>
-			</li>
-			<li>
-				<router-link to="/evolucion" activeClass="orange1" exactActiveClass="orange1">
-					<div class="max">
-						<h6 class="small">Gráf. Evolución</h6>
-						<div class="small-text">Evolución de precios</div>
-					</div>
-				</router-link>
-			</li>
-		</ul>
-	</dialog>
 
-	<router-view></router-view>
+	<main class="responsive">
+		<router-view v-slot="{ Component }">
+			<keep-alive>
+				<component :is="Component" />
+			</keep-alive>
+		</router-view>
+	</main>
 </template>
 
 <script setup>
+	import { useAuthStore } from '@stores/AuthStore'
+	import { storeToRefs } from 'pinia'
+	import { defineAsyncComponent } from 'vue'
+	import { MainMenu } from '@/utiles/MainMenu'
+
+	const MenuLink = defineAsyncComponent(() => import('@components/MenuLink.vue'))
+
+	const store = useAuthStore()
+
+	const { userAuth } = storeToRefs(store)
+
+	//watch(userAuth, () => console.log('storeToRefs',userAuth.value))
+
 	function showDialog(selector) {
 		ui(selector)
 	}
@@ -75,5 +38,8 @@
 		ui(selector)
 	}
 
+	function logout() {
+		store.logout()
+	}
 	async function refreshDialog() {}
 </script>

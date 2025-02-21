@@ -1,35 +1,35 @@
+import { BaseService, ErrorService } from './BaseService'
+import { endpoints } from './EndpointServices'
+import { useAuthStore } from '@stores/AuthStore'
 
-import {baseService} from './BaseService'
-
-class AuthService extends baseService {
-	constructor() {
-	}
-
-
+class AuthService extends BaseService {
 	// Example method to handle user login
-	login(username, password) {
+	async login(auth) {
 		// Implement login logic here
-		console.log(`Logging in user: ${username}`);
-		
-		super.post('/v1/auth/signin',
-		{
-			accountName:username,
-			password,
-			appId: "962d4613-0e47-493f-ac72-20d4acb3ee6a"
-		})
+		//console.log('Logging in user', auth)
+
+		try {
+			const r = await super.post(endpoints.URL_SIGNIN, auth)
+
+			const store = useAuthStore()
+			store.userAuth = r.data
+
+		} catch (e) {
+			throw new ErrorService(e.response.data.authMessage, e.request.responseURL)
+		}
 	}
 
 	// Example method to handle user logout
 	logout() {
 		// Implement logout logic here
-		console.log('Logging out user');
+		console.log('Logging out user')
 	}
 
 	// Example method to check if user is authenticated
 	isAuthenticated() {
 		// Implement authentication check logic here
-		return false;
+		return false
 	}
 }
 
-export const service= new AuthService();
+export const service = new AuthService()

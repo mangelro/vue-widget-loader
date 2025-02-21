@@ -1,48 +1,63 @@
 <template>
 	<div class="grid">
-		<article class="s12 m12 l4">
+		<article class="s12 m12 l6">
 			<div class="row">
 				<i>euro</i>
 				<h6>Gráfico de densidad AOVE</h6>
+				<button class="chip round">
+					<i class="primary-text">today</i>
+					<span>{{ periodo }}</span>
+				</button>
 			</div>
+
 			<ChartWidgetLoader
 				component="DensidadChart.vue"
 				:data-source="datosDensidadAOVE"
 				title="Gráf. Densidad AOVE"
 				theme="minimalist"
-				series-color="#85CC1D"
+				series-color="#6cb304"
 				aspect-ratio="16/9"
 			></ChartWidgetLoader>
 			<p class="small-text">{{ timestamp }}</p>
 		</article>
 
-		<article class="s12 m12 l4">
+		<article class="s12 m12 l6">
 			<div class="row">
 				<i>euro</i>
 				<h6>Gráfico de densidad AOV</h6>
+				<button class="chip round">
+					<i class="primary-text">today</i>
+					<span>{{ periodo }}</span>
+				</button>
 			</div>
+
 			<ChartWidgetLoader
 				component="DensidadChart.vue"
 				:data-source="datosDensidadAOV"
 				title="Gráf. Densidad AOV"
 				theme="minimalist"
-				series-color="#E7D21F"
+				series-color="#e7d21f"
 				aspect-ratio="16/9"
 			></ChartWidgetLoader>
 			<p class="small-text">{{ timestamp }}</p>
 		</article>
 
-		<article class="s12 m12 l4">
+		<article class="s12 m12 l6">
 			<div class="row">
 				<i>euro</i>
 				<h6>Gráfico de densidad AOL</h6>
+				<button class="chip round">
+					<i class="primary-text">today</i>
+					<span>{{ periodo }}</span>
+				</button>
 			</div>
+
 			<ChartWidgetLoader
 				component="DensidadChart.vue"
 				:data-source="datosDensidadAOL"
 				title="Gráf. Densidad AOL"
 				theme="minimalist"
-				series-color="#C45949"
+				series-color="#ab4030"
 				aspect-ratio="16/9"
 			></ChartWidgetLoader>
 			<p class="small-text">{{ timestamp }}</p>
@@ -57,14 +72,13 @@
 
 	const ChartWidgetLoader = defineAsyncComponent(() => import('@components/loaders/ChartWidgetLoader.vue'))
 
-	const props = defineProps({})
-
 	const timestamp = ref('')
 
+	const periodo = '20230101|20231031'
 	const datosDensidadAOVE = () =>
 		service
 			.getDensidad({
-				periodo: '20230101|20231031',
+				periodo,
 				calidad: 'AOVE',
 			})
 			.then(data => {
@@ -76,7 +90,7 @@
 	const datosDensidadAOV = () =>
 		service
 			.getDensidad({
-				periodo: '20230101|20231031',
+				periodo,
 				calidad: 'AOV',
 			})
 			.then(data => {
@@ -88,7 +102,7 @@
 	const datosDensidadAOL = () =>
 		service
 			.getDensidad({
-				periodo: '20230101|20231031',
+				periodo,
 				calidad: 'AOL',
 			})
 			.then(data => {

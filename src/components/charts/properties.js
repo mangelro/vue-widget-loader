@@ -1,4 +1,4 @@
-export const commomProperties = Object.freeze({
+export const commonProperties = Object.freeze({
 	data: {
 		type: Array,
 		default: [],

@@ -5,8 +5,9 @@ import {endpoints} from './EndpointServices'
 class PreciosService extends BaseService {
 	constructor() {
 		super()
-		//super.useRefreshToken()
+		super.useRefreshToken()
 	}
+
 
 
 	/**
@@ -30,6 +31,16 @@ class PreciosService extends BaseService {
 	 */
 	async getEvolucion(query) {
 		const r = await super.get(endpoints.URL_EVOLUCION, {
+			params: {
+				...query,
+			},
+		})
+		return r.data
+	}
+
+
+	async getPreciosMedios(query) {
+		const r = await super.get(endpoints.URL_PRECIOS_MEDIOS, {
 			params: {
 				...query,
 			},

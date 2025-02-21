@@ -9,10 +9,10 @@ class EuriborService extends BaseService {
 	 * @param {*} cancellation
 	 * @returns
 	 */
-	async getIndices() {
+	async getIndices(query) {
 		const r = await super.get('/v1/euribor',{
 			params:{
-				periodo:'202401|202412'
+				...query
 			}
 		})
 		return r.data

@@ -5,26 +5,26 @@
 
 <script setup>
 	//name:'EuriborChart',
-	import {commomProperties} from './properties'
-
-	import { ref, provide, defineAsyncComponent, computed } from 'vue'
+	import { commonProperties } from './properties'
+	import { commonToolbox } from './toolbox.js'
+	import { computed } from 'vue'
 	import { use } from 'echarts/core'
 	import { CanvasRenderer } from 'echarts/renderers'
 	import { BarChart } from 'echarts/charts'
-	import { GridComponent, TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-	import VChart, { THEME_KEY } from 'vue-echarts'
+	import { GridComponent, TitleComponent, TooltipComponent, ToolboxComponent } from 'echarts/components'
+	import VChart from 'vue-echarts'
 
-	use([CanvasRenderer, GridComponent, BarChart, TitleComponent, TooltipComponent, LegendComponent])
+	use([CanvasRenderer, GridComponent, BarChart, TitleComponent, TooltipComponent, ToolboxComponent])
 
 	const props = defineProps({
-		...commomProperties
+		...commonProperties,
 	})
 
 	//provide(THEME_KEY, props.theme)
 
 	//console.log('d',props.data.map(i => ({from:i.desde,to:i.hasta})),)
 
-/**
+	/**
  * Blanco Humo: #F5F5F5
 Marfil: #FFFFF0
 Blanco Floral: #FFFAF0
@@ -36,12 +36,11 @@ Blanco Menta: #F5FFFA
  * 
  */
 
-	const option = ref({
+	const option = computed(() => ({
 		grid: {
 			show: true,
 			right: 10,
 			left: 50,
-			
 		},
 		title: {
 			text: props.title,
@@ -49,17 +48,20 @@ Blanco Menta: #F5FFFA
 		tooltip: {
 			formatter: function (params) {
 				const { name, color, seriesName, value } = params[0]
-				return `<p>De ${name.split(',')[0]} a ${name.split(',')[1]} €/Tm</p><span style="font-size:1.5rem;color:${
+				return `<p>De ${name.split(',')[0]} a ${
+					name.split(',')[1]
+				} €/Tm</p><span style="font-size:1.5rem;color:${
 					props.seriesColor ?? color
 				}">&#9679;</span>&nbsp;&nbsp;${seriesName}&nbsp;&nbsp;&nbsp;<b>${value}%</b>`
 			},
 		},
+		toolbox: commonToolbox,
 		xAxis: {
 			type: 'category',
 			data: props.data.map(i => [i.desde, i.hasta]),
 
 			axisLabel: {
-				show:true,
+				show: true,
 				fontSize: '0.7rem',
 				formatter: (v, i) =>
 					`de ${props.data[i].desde.toLocaleString('es-ES')}/tm.\na ${props.data[i].hasta.toLocaleString(
@@ -93,18 +95,11 @@ Blanco Menta: #F5FFFA
 				type: 'bar',
 				name: props.seriesName ?? props.title,
 				data: props.data.map(i => i.porcentaje * 100),
-		
-				itemStyle:{
-					color: props.seriesColor,
-				
-					// shadowColor:'rgba(0, 0, 0, 0.1)',
-					// shadowOffsetX:4,
-					// shadowOffsetY:-4,
-					// shadowBlur:4
 
+				itemStyle: {
+					color: props.seriesColor,
 				},
-				
-				//barMaxWidth: 80,
+
 				barWidth: '80%',
 
 				showBackground: props.seriesColor !== undefined,
@@ -114,9 +109,7 @@ Blanco Menta: #F5FFFA
 				},
 			},
 		],
-	})
+	}))
 
 	//console.log(option.value)
 </script>
-
-<style scoped></style>

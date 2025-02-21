@@ -1,7 +1,9 @@
+<table></table>
 <template>
 	<div class="widget" :style="{ 'aspect-ratio': aspectRatio }">
-		<component :is="widgetComponent" :data="data" v-bind="$attrs"></component>
-		
+		<TheLoader v-if="loading && !data"></TheLoader>
+		<TheError v-else-if="error" :error-message="error"></TheError>
+		<component :is="widgetComponent" :data="data" v-bind="$attrs" v-else></component>
 	</div>
 </template>
 
@@ -13,16 +15,15 @@
 	 * cuya carga no bloquee la carga de dicha página
 	 */
 
-	import { ref, defineAsyncComponent, watch } from 'vue'
+	import { ref, defineAsyncComponent,  onMounted } from 'vue'
 
-	const Loader = defineAsyncComponent(() => import('@components/TheLoader.vue'))
-	const Error = defineAsyncComponent(() => import('@components/TheError.vue'))
+	const TheLoader = defineAsyncComponent(() => import('@components/TheLoader.vue'))
+	const TheError = defineAsyncComponent(() => import('@components/TheError.vue'))
 
-	const data = ref([])
+	defineOptions({
+		inheritAttrs: false,
+	})
 
-
-
-	const loading = ref(true)
 
 	const props = defineProps({
 		aspectRatio: {
@@ -36,21 +37,39 @@
 		},
 	})
 
+	const data = ref()
+	const error = ref()
+	const loading = ref(true)
+
+	//watch(error, () => console.log('Error en cargador', error.value))
+
 	const widgetComponent = defineAsyncComponent({
-		loader: loadComponent,
-		loadingComponent: Loader,
-		errorComponent: Error,
+		loader: () => import(/* @vite-ignore */ `../charts/${props.component}`),
 		delay: 200,
 		timeout: 10_000,
 	})
 
-	function loadComponent() {
+	onMounted(() => {
 		
-		return props
+		loadComponent()
+	})
+
+	function loadComponent() {
+		props
 			.dataSource()
-			.then(values => (data.value = values))
-			.then(() => import(/* @vite-ignore */`../charts/${props.component}`)) 
-			
+			.then(v => (data.value = v))
+			//.then(() => import(/* @vite-ignore */`../charts/${props.component}`))
+			.catch(e => (error.value = e.message))
 			.finally(() => (loading.value = false))
 	}
+
+
+	defineExpose({
+		reloadData: () =>{
+			data.value = null
+			loading.value = true
+			loadComponent()
+			
+		},
+	})
 </script>

@@ -1,13 +1,14 @@
 {
 	"grid": {
-		"show": false,
+		"show": true,
 		"width": "100%",
 		"right": 5,
 		"left": 5,
 		"bottom": 40,
-		"borderWidth": 0
+		"borderWidth": 0,
+		"backgroundColor": "#F7F2F7"
 	},
-	"color": ["#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4", "#ea7ccc", "#5470c6"],
+
 	"backgroundColor": "rgba(255, 255, 255, 0)",
 	"textStyle": {},
 	"title": {
@@ -34,9 +35,10 @@
 			"shadowOffsetY": 3
 		},
 		"showSymbol": false,
-		"symbolSize": 5,
+		"showAllSymbol": true,
+		"symbolSize": 4,
 		"symbol": "emptyCircle",
-		"smooth": true,
+		"smooth": 0.3,
 		"emphasis": {
 			"focus": "series",
 			"scale": 0,
@@ -71,8 +73,7 @@
 		"itemStyle": {
 			"barBorderWidth": 10,
 			"barBorderColor": "#ccc",
-			"borderRadius":4
-
+			"borderRadius": 4
 		},
 		"emphasis": {
 			"itemStyle": {
@@ -236,6 +237,7 @@
 		}
 	},
 	"categoryAxis": {
+		
 		"axisLine": {
 			"show": false,
 			"lineStyle": {
@@ -250,7 +252,8 @@
 		},
 		"axisLabel": {
 			"show": true,
-			"color": "#aaa"
+			"color": "#aaa",
+			"fontSize": "0.5rem"
 		},
 		"splitLine": {
 			"show": false,
@@ -267,6 +270,12 @@
 	},
 
 	"valueAxis": {
+		"nameLocation":"middle",
+		"nameGap":40,
+		"nameTextStyle":{
+			"color": "#aaa",
+			"fontSize": "0.8rem"
+		},
 		"axisLine": {
 			"show": false,
 			"lineStyle": {
@@ -281,7 +290,8 @@
 		},
 		"axisLabel": {
 			"show": false,
-			"color": "#aaa"
+			"color": "#aaa",
+			"fontSize": "0.5rem"
 		},
 
 		"splitLine": {
